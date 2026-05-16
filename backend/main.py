@@ -91,7 +91,10 @@ if os.path.exists(DDI_DATA_DIR):
     if csv_files:
         ddi_csv_path = csv_files[0]
 
-ocr_engine = TesseractInference()
+# Use TrOCR (trocr-large-handwritten) as primary OCR engine.
+# Falls back to demo mode automatically if model is not yet downloaded.
+print('[Backend] Loading TrOCR engine (this may take a moment on first run)...')
+ocr_engine = TrOCRInference()
 post_processor = PostProcessor()
 interaction_checker = InteractionChecker(dataset_path=ddi_csv_path)
 
@@ -114,53 +117,6 @@ app.add_middleware(
 
 # Serve uploaded images
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
-
-# ─── Seed demo data ──────────────────────────────────────────────────
-
-def seed_demo_data():
-    """Seed some demo prescriptions for the dashboard."""
-    from PIL import Image as PILImage
-    import random
-    rng = random.Random(42)
-    demo_dates = [
-        "2025-11-01","2025-11-03","2025-11-07","2025-11-10","2025-11-14",
-        "2025-11-15","2025-11-18","2025-11-20","2025-11-22","2025-11-25",
-    ]
-    from ocr.trocr_inference import BD_MEDICINES, DOSAGES, FREQUENCIES, DURATIONS, INSTRUCTIONS
-    
-    for i, date in enumerate(demo_dates):
-        n = rng.randint(2, 4)
-        meds = []
-        for med in rng.sample(BD_MEDICINES, n):
-            meds.append({
-                'name': med, 'dosage': rng.choice(DOSAGES),
-                'frequency': rng.choice(FREQUENCIES), 'duration': rng.choice(DURATIONS),
-                'instructions': rng.choice(INSTRUCTIONS),
-                'confidence': round(rng.uniform(0.72, 0.96), 3),
-                'match_score': 100.0, 'was_corrected': False,
-                'original_name': None, 'frequency_expanded': '',
-            })
-        avg_conf = sum(m['confidence'] for m in meds) / len(meds)
-        rx = {
-            'id': str(uuid.uuid4()),
-            'raw_text': ' | '.join(f"{m['name']} {m['dosage']} {m['frequency']}" for m in meds),
-            'confidence': round(avg_conf, 3),
-            'medicines': meds,
-            'patient_name': f'Patient {i+1}',
-            'doctor_name': rng.choice(['Dr. Sharma','Dr. Patel','Dr. Roy','Dr. Das','Dr. Khan']),
-            'date': date,
-            'processed_at': f"{date}T10:{rng.randint(0,59):02d}:00",
-            'image_url': None,
-            'status': 'completed',
-        }
-        prescriptions_db.append(rx)
-        # Check interactions for this prescription
-        med_names = [m['name'] for m in meds]
-        result = interaction_checker.check(med_names)
-        if result['total_count'] > 0:
-            interactions_log.append({'prescription_id': rx['id'], **result})
-
-seed_demo_data()
 
 # ─── API Routes ───────────────────────────────────────────────────────
 
@@ -267,4 +223,4 @@ async def get_medicine_interactions(name: str):
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8002, reload=True)

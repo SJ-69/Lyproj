@@ -1,5 +1,6 @@
 """
 OCR Post-Processing — Fuzzy matching and spell correction for medicine names.
+Single source of truth: medicine list is loaded from trocr_inference (RxHandBD labels).
 """
 from typing import List, Dict, Optional, Tuple
 
@@ -9,23 +10,11 @@ try:
 except ImportError:
     HAS_RAPIDFUZZ = False
 
-KNOWN_MEDICINES = [
-    "Beklo","Maxima","Leptic","Esoral","Omastin","Esonix","Canazole","Fixal",
-    "Progut","Diflu","Montair","Flexilax","Maxpro","Vifas","Conaz","Fexofast",
-    "Fenadin","Telfast","Dinafex","Ritch","Renova","Flugal","Axodin","Sergel",
-    "Nexum","Opton","Nexcap","Fexo","Montex","Exium","Lumona","Napa",
-    "Azithrocin","Atrizin","Monas","Nidazyl","Metsina","Baclon","Rozith",
-    "Bicozin","Ace","Amodis","Alatrol","Napa Extend","Rivotril","Montene",
-    "Filmet","Aceta","Tamen","Bacmax","Disopan","Rhinil","Flamyd","Metro",
-    "Zithrin","Candinil","Lucan-R","Backtone","Bacaid","Etizin","Az",
-    "Romycin","Azyth","Cetisoft","Dancel","Tridosil","Nizoder","Ketoral",
-    "Ketocon","Ketotab","Ketozol","Denixil","Provair","Odmon","Baclofen",
-    "MKast","Trilock","Flexibac",
-    # Common Indian medicines
-    "Paracetamol","Ibuprofen","Amoxicillin","Cetirizine","Omeprazole",
-    "Metformin","Aspirin","Azithromycin","Ciprofloxacin","Diclofenac",
-    "Pantoprazole","Ranitidine","Doxycycline","Metronidazole","Levofloxacin",
-]
+try:
+    from ocr.trocr_inference import load_medicine_list as _load
+    KNOWN_MEDICINES = _load()
+except Exception:
+    KNOWN_MEDICINES = []   # trocr_inference will populate on engine init
 
 ABBREVIATIONS = {
     'OD': 'Once daily', 'BD': 'Twice daily', 'TDS': 'Thrice daily',

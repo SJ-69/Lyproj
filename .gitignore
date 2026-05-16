@@ -40,10 +40,19 @@ desktop.ini
 # ML models (too large for git)
 ml_pipeline/models/
 ml_pipeline/data/synthetic/
+ml_pipeline/data/synthetic_lines/
+ml_pipeline/.hf_cache/
 *.pt
 *.pth
 *.onnx
 *.bin
+
+# RxHandBD dataset images (keep label CSVs, exclude raw images — too large)
+ml_pipeline/data/rxhandbd/Train_Set/
+ml_pipeline/data/rxhandbd/Test_Set/
+
+# Scratch / test scripts
+scratch_*.py
 
 # Logs
 *.log

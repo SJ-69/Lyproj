@@ -37,7 +37,7 @@ TEST_IMGS = DATA_DIR / "Test_Set"
 
 # ── Load ───────────────────────────────────────────────────────────────
 print("[Eval] Loading TrOCR engine...", flush=True)
-engine = TrOCRInference()
+engine = TrOCRInference(model_path="ml_pipeline/models/trocr_rxhandbd_finetuned")
 
 print("[Eval] Loading medicine vocabulary...", flush=True)
 BD_MEDICINES = load_medicine_list()

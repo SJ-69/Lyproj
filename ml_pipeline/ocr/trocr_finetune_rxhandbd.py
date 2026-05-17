@@ -35,10 +35,10 @@ TRAIN_IMG_DIR = DATA_DIR / "Train_Set"
 MODEL_ID      = "microsoft/trocr-large-handwritten"
 SAVE_PATH     = SAVE_DIR / "trocr_rxhandbd_finetuned"
 
-DEVICE        = "mps" if torch.backends.mps.is_available() else "cpu"
+DEVICE        = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
 BATCH_SIZE    = 4
 GRAD_ACCUM    = 8       # effective batch = 32
-LR            = 5e-5
+LR            = 1e-5
 MAX_EPOCHS    = 15
 PATIENCE      = 4
 IMG_H         = 384     # TrOCR optimal height

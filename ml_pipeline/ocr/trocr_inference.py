@@ -209,7 +209,8 @@ class TrOCRInference:
         global BD_MEDICINES
         self.model     = None
         self.processor = None
-        self.device    = "cpu"   # MPS has known generate() bugs
+        import torch
+        self.device    = "cuda" if torch.cuda.is_available() else "cpu"   # MPS has known generate() bugs
 
         # Load medicine vocabulary once
         if not BD_MEDICINES:
